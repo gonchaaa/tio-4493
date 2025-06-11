@@ -1,11 +1,13 @@
 package com.example.appeal_service.services.impl;
 
 import com.example.appeal_service.DTOs.UserRequestDTO;
+import com.example.appeal_service.DTOs.feign.AccountDTO;
 import com.example.appeal_service.DTOs.response.UserRequestResponseDTO;
 import com.example.appeal_service.entities.AppealCategory;
 import com.example.appeal_service.entities.AppealPurpose;
 import com.example.appeal_service.entities.UserRequest;
 import com.example.appeal_service.enums.Status;
+import com.example.appeal_service.feign.DemoClient;
 import com.example.appeal_service.repositories.AppealCategoryRepository;
 import com.example.appeal_service.repositories.AppealPurposeRepository;
 import com.example.appeal_service.repositories.UserRequestRepository;
@@ -27,6 +29,7 @@ public class UserRequestImpl implements UserRequestService {
     private final AppealCategoryRepository appealCategoryRepository;
     private final AppealPurposeRepository appealPurposeRepository;
     private final FileStorageService fileStorageService;
+    private final DemoClient demoClient;
 
     @Override
     public UserRequestResponseDTO createUserRequest(UserRequestDTO userRequestDTO) {
@@ -46,6 +49,14 @@ public class UserRequestImpl implements UserRequestService {
         userRequest.setAttachmentPath(filePath);
         userRequest.setStatus(Status.IN_PROGRESS);
         userRequest.setDate(LocalDate.now());
+
+        if(appealCategory.getId()==3){
+            List<AccountDTO> cards = demoClient.getAccountByUserId(userRequestDTO.getUserId());
+            if(cards.isEmpty()) {
+                throw new RuntimeException("No cards found for user with id: " + userRequestDTO.getUserId());
+            }
+
+        }
 
         userRequest= userRequestRepository.save(userRequest);
 

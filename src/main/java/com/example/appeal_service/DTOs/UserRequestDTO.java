@@ -16,4 +16,5 @@ public class UserRequestDTO {
     private MultipartFile file;
     private Long categoryId;
     private Long purposeId;
+    private Long userId;
 }
