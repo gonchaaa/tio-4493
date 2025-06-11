@@ -1,8 +1,11 @@
 package com.example.appeal_service.services.impl;
 
 import com.example.appeal_service.DTOs.AppealCategoryDTO;
+import com.example.appeal_service.DTOs.response.AppealPurposeResponseDTO;
 import com.example.appeal_service.entities.AppealCategory;
+import com.example.appeal_service.entities.AppealPurpose;
 import com.example.appeal_service.repositories.AppealCategoryRepository;
+import com.example.appeal_service.repositories.AppealPurposeRepository;
 import com.example.appeal_service.services.AppealCategoryService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -11,12 +14,14 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AppealCategoryImpl implements AppealCategoryService {
 
     private final AppealCategoryRepository appealCategoryRepository;
+    private final AppealPurposeRepository appealPurposeRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -50,11 +55,21 @@ public class AppealCategoryImpl implements AppealCategoryService {
         List<AppealCategoryDTO> appealCategoryDTOList =new ArrayList<>();
         List<AppealCategory> categories = appealCategoryRepository.findAll();
 
-        for (AppealCategory category : categories) {
-            AppealCategoryDTO appealCategoryDTO = new AppealCategoryDTO();
-            modelMapper.map(category, appealCategoryDTO);
-            appealCategoryDTOList.add(appealCategoryDTO);
-        }
-        return appealCategoryDTOList;
+        return categories.stream()
+                         .map(category -> {
+                         AppealCategoryDTO appealCategoryDTO = new AppealCategoryDTO();
+                         modelMapper.map(category, appealCategoryDTO);
+                         return appealCategoryDTO;
+                        })
+                        .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AppealPurposeResponseDTO> getPurposesByCategoryId(Long categoryId) {
+
+            List<AppealPurpose> appealPurposes = appealPurposeRepository.findByCategoryId(categoryId);
+        return appealPurposes.stream()
+                          .map(p->new AppealPurposeResponseDTO(p.getId(),p.getName()))
+                          .collect(Collectors.toList());
     }
 }
