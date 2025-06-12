@@ -1,6 +1,8 @@
 package com.example.appeal_service.DTOs.response;
 
+import com.example.appeal_service.DTOs.feign.AccountDTO;
 import com.example.appeal_service.enums.Status;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +14,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class UserRequestResponseDTO {
         private String description;
         private String voiceMessage;
@@ -20,4 +23,5 @@ public class UserRequestResponseDTO {
         private Long purposeId;
         private LocalDate date;
         private Status status;
+        private Long cardId;
 }

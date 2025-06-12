@@ -16,9 +16,11 @@ import java.util.List;
 public class UserRequestController {
     private final UserRequestService userRequestService;
 
+
     @PostMapping
-    public ResponseEntity<UserRequestResponseDTO> createUserRequest(@ModelAttribute UserRequestDTO userRequestDTO) {
-        UserRequestResponseDTO response = userRequestService.createUserRequest(userRequestDTO);
+    public ResponseEntity<UserRequestResponseDTO> createUserRequest(@ModelAttribute UserRequestDTO userRequestDTO,
+                                                                    @RequestHeader("Authorization") String authHeader) {
+        UserRequestResponseDTO response = userRequestService.createUserRequest(userRequestDTO,authHeader);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

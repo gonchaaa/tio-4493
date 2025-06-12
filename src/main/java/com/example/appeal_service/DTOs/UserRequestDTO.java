@@ -1,5 +1,6 @@
 package com.example.appeal_service.DTOs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,5 +17,5 @@ public class UserRequestDTO {
     private MultipartFile file;
     private Long categoryId;
     private Long purposeId;
-    private Long userId;
+    private Long cardId;
 }
