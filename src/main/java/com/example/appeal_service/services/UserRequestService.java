@@ -9,4 +9,5 @@ public interface UserRequestService {
     UserRequestResponseDTO createUserRequest(UserRequestDTO userRequestDTO,String authHeader);
     UserRequestResponseDTO getUserRequestById(Long id);
     List<UserRequestResponseDTO> getAllUserRequests();
+    List<UserRequestResponseDTO> getUserRequestsByUserId(Long userId);
 }

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -21,7 +22,7 @@ public class UserRequestResponseDTO {
         private String file;
         private Long categoryId;
         private Long purposeId;
-        private LocalDate date;
+        private LocalDateTime createdDate;
         private Status status;
         private Long cardId;
 }

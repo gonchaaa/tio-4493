@@ -22,8 +22,11 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class UserRequestImpl implements UserRequestService {
     private final FileStorageService fileStorageService;
     private final DemoClient demoClient;
     private final JwtTokenUtil jwtTokenUtil;
+    private final ModelMapper modelMapper;
 
     @Override
     public UserRequestResponseDTO createUserRequest(UserRequestDTO userRequestDTO,String authHeader) {
@@ -60,10 +64,12 @@ public class UserRequestImpl implements UserRequestService {
         userRequest.setVoiceMessage(voicePath);
         userRequest.setAttachmentPath(filePath);
         userRequest.setStatus(Status.IN_PROGRESS);
-        userRequest.setDate(LocalDate.now());
+        userRequest.setCreatedDate(LocalDateTime.now());
         userRequest.setUserId(userId);
         userRequest.setCardId(userRequestDTO.getCardId());
+
         userRequest= userRequestRepository.save(userRequest);
+
         if(appealCategory.getId()==3){
             List<AccountDTO> cards = demoClient.getAccountByUserId(userId,  "Bearer " + token);
             if(cards.isEmpty()) {
@@ -72,8 +78,6 @@ public class UserRequestImpl implements UserRequestService {
 
         }
 
-
-
         String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
 
         UserRequestResponseDTO userRequestResponseDTO = new UserRequestResponseDTO();
@@ -81,7 +85,7 @@ public class UserRequestImpl implements UserRequestService {
         userRequestResponseDTO.setCategoryId(userRequest.getCategory().getId());
         userRequestResponseDTO.setPurposeId(userRequest.getPurpose().getId());
         userRequestResponseDTO.setStatus(userRequest.getStatus());
-        userRequestResponseDTO.setDate(userRequest.getDate());
+        userRequestResponseDTO.setCreatedDate(userRequest.getCreatedDate());
         userRequestResponseDTO.setCardId(userRequest.getCardId());
         userRequestResponseDTO.setVoiceMessage(baseUrl + "/api/files/download?path=" + userRequest.getVoiceMessage());
         userRequestResponseDTO.setFile(baseUrl + "/api/files/download?path=" + userRequest.getAttachmentPath());
@@ -91,11 +95,43 @@ public class UserRequestImpl implements UserRequestService {
 
     @Override
     public UserRequestResponseDTO getUserRequestById(Long id) {
+
+        Optional<UserRequest> optionalUserRequest = userRequestRepository.findById(id);
+        if (optionalUserRequest.isPresent()) {
+            UserRequest userRequest = optionalUserRequest.get();
+            UserRequestResponseDTO userRequestResponseDTO = new UserRequestResponseDTO();
+            userRequestResponseDTO.setDescription(userRequest.getDescription());
+            userRequestResponseDTO.setCategoryId(userRequest.getCategory().getId());
+            userRequestResponseDTO.setPurposeId(userRequest.getPurpose().getId());
+            userRequestResponseDTO.setStatus(userRequest.getStatus());
+            userRequestResponseDTO.setCreatedDate(userRequest.getCreatedDate());
+            userRequestResponseDTO.setCardId(userRequest.getCardId());
+            String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+            userRequestResponseDTO.setVoiceMessage(baseUrl + "/api/files/download?path=" + userRequest.getVoiceMessage());
+            userRequestResponseDTO.setFile(baseUrl + "/api/files/download?path=" + userRequest.getAttachmentPath());
+            return userRequestResponseDTO;
+        }
+
         return null;
     }
 
     @Override
     public List<UserRequestResponseDTO> getAllUserRequests() {
-        return List.of();
+        List<UserRequest> userRequests = userRequestRepository.findAll();
+        return userRequests.stream()
+                .map(userRequest -> modelMapper.map(userRequest, UserRequestResponseDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserRequestResponseDTO> getUserRequestsByUserId(Long userId) {
+    List<UserRequest> userRequests = userRequestRepository.findByUserId(userId);
+    if (userRequests != null && !userRequests.isEmpty()) {
+        return userRequests.stream()
+                .sorted(Comparator.comparing(UserRequest::getCreatedDate).reversed())
+                .map(userRequest -> modelMapper.map(userRequest, UserRequestResponseDTO.class))
+                .collect(Collectors.toList());
+    }
+    throw new RuntimeException("No user requests found for user with id: " + userId);
     }
 }

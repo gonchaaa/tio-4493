@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -22,15 +23,19 @@ public class UserRequest {
 
     @Column(length = 50)
     private String description;
+
     private String voiceMessage;
+
     private String attachmentPath;
 
-    private LocalDate date;
+    private LocalDateTime createdDate;
 
     @ManyToOne
     private AppealCategory category;
+
     @ManyToOne
     private AppealPurpose purpose;
+
     @Enumerated(EnumType.STRING)
     private Status status;
 

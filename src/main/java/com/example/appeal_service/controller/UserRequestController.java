@@ -35,4 +35,10 @@ public class UserRequestController {
         List<UserRequestResponseDTO> requests = userRequestService.getAllUserRequests();
         return ResponseEntity.ok(requests);
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<UserRequestResponseDTO>> getUserRequestsByUserId(@PathVariable Long userId){
+        List<UserRequestResponseDTO> response = userRequestService.getUserRequestsByUserId(userId);
+        return ResponseEntity.ok(response);
+    }
 }
