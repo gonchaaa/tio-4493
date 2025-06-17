@@ -35,63 +35,55 @@ public class UserRequestImpl implements UserRequestService {
     private final AppealCategoryRepository appealCategoryRepository;
     private final AppealPurposeRepository appealPurposeRepository;
     private final FileStorageService fileStorageService;
-    private final DemoClient demoClient;
-    private final JwtTokenUtil jwtTokenUtil;
+    private final DemoClient demoClient; // feign ucun istifade olunan
+    private final CardListForClientCode cardListForClientCode;
     private final ModelMapper modelMapper;
 
-    @Override
-    public UserRequestResponseDTO createUserRequest(UserRequestDTO userRequestDTO,String authHeader) {
-        AppealCategory appealCategory = appealCategoryRepository.findById(userRequestDTO.getCategoryId())
-                .orElseThrow(()-> new RuntimeException("Category not found with id: " + userRequestDTO.getCategoryId()));
-        AppealPurpose appealPurpose = appealPurposeRepository.findById(userRequestDTO.getPurposeId())
-                .orElseThrow(()-> new RuntimeException("Purpose not found with id: " + userRequestDTO.getPurposeId()));
+        @Override
+        public UserRequestResponseDTO createUserRequest(UserRequestDTO userRequestDTO,String clientCode) {
+            AppealCategory appealCategory = appealCategoryRepository.findById(userRequestDTO.getCategoryId())
+                    .orElseThrow(()-> new RuntimeException("Category not found with id: " + userRequestDTO.getCategoryId()));
+            AppealPurpose appealPurpose = appealPurposeRepository.findById(userRequestDTO.getPurposeId())
+                    .orElseThrow(()-> new RuntimeException("Purpose not found with id: " + userRequestDTO.getPurposeId()));
 
-        String voicePath = fileStorageService.saveFile(userRequestDTO.getVoiceMessage(),"voices");
-        String filePath = fileStorageService.saveFile(userRequestDTO.getFile(),"files");
+            String voicePath = fileStorageService.saveFile(userRequestDTO.getVoiceMessage(),"voices");
+            String filePath = fileStorageService.saveFile(userRequestDTO.getFile(),"files");
 
-        String token = authHeader.replace("Bearer ", "");
-        Long userId;
-        try {
-            userId = jwtTokenUtil.extractUserId(token);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
-        }
+            UserRequest userRequest = new UserRequest();
+            userRequest.setDescription(userRequestDTO.getDescription());
+            userRequest.setCategory(appealCategory);
+            userRequest.setPurpose(appealPurpose);
+            userRequest.setVoiceMessage(voicePath);
+            userRequest.setAttachmentPath(filePath);
+            userRequest.setStatus(Status.IN_PROGRESS);
+            userRequest.setCreatedDate(LocalDateTime.now());
+            userRequest.setClientCode(clientCode);
+            userRequest.setCardId(userRequestDTO.getCardId());
 
-        UserRequest userRequest = new UserRequest();
-        userRequest.setDescription(userRequestDTO.getDescription());
-        userRequest.setCategory(appealCategory);
-        userRequest.setPurpose(appealPurpose);
-        userRequest.setVoiceMessage(voicePath);
-        userRequest.setAttachmentPath(filePath);
-        userRequest.setStatus(Status.IN_PROGRESS);
-        userRequest.setCreatedDate(LocalDateTime.now());
-        userRequest.setUserId(userId);
-        userRequest.setCardId(userRequestDTO.getCardId());
+            userRequest= userRequestRepository.save(userRequest);
 
-        userRequest= userRequestRepository.save(userRequest);
+            if(appealCategory.getId()==3){
+                List<Integer> cards = cardListForClientCode.getMockCardsByClientCode(clientCode);
+                if(cards.isEmpty()) {
+                    throw new RuntimeException("No cards found for user with id: " );
+                }
 
-        if(appealCategory.getId()==3){
-            List<AccountDTO> cards = demoClient.getAccountByUserId(userId,  "Bearer " + token);
-            if(cards.isEmpty()) {
-                throw new RuntimeException("No cards found for user with id: " );
             }
 
+            String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+
+            UserRequestResponseDTO userRequestResponseDTO = new UserRequestResponseDTO();
+            userRequestResponseDTO.setDescription(userRequest.getDescription());
+            userRequestResponseDTO.setCategoryId(userRequest.getCategory().getId());
+            userRequestResponseDTO.setPurposeId(userRequest.getPurpose().getId());
+            userRequestResponseDTO.setStatus(userRequest.getStatus());
+            userRequestResponseDTO.setCreatedDate(userRequest.getCreatedDate());
+            userRequestResponseDTO.setCardId(userRequest.getCardId());
+            userRequestResponseDTO.setVoiceMessage(baseUrl + "/api/files/download?path=" + userRequest.getVoiceMessage());
+            userRequestResponseDTO.setFile(baseUrl + "/api/files/download?path=" + userRequest.getAttachmentPath());
+
+            return userRequestResponseDTO;
         }
-
-        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-
-        UserRequestResponseDTO userRequestResponseDTO = new UserRequestResponseDTO();
-        userRequestResponseDTO.setDescription(userRequest.getDescription());
-        userRequestResponseDTO.setCategoryId(userRequest.getCategory().getId());
-        userRequestResponseDTO.setPurposeId(userRequest.getPurpose().getId());
-        userRequestResponseDTO.setStatus(userRequest.getStatus());
-        userRequestResponseDTO.setCreatedDate(userRequest.getCreatedDate());
-        userRequestResponseDTO.setCardId(userRequest.getCardId());
-        userRequestResponseDTO.setVoiceMessage(baseUrl + "/api/files/download?path=" + userRequest.getVoiceMessage());
-        userRequestResponseDTO.setFile(baseUrl + "/api/files/download?path=" + userRequest.getAttachmentPath());
-
-        return userRequestResponseDTO;
-    }
 
     @Override
     public UserRequestResponseDTO getUserRequestById(Long id) {

@@ -39,7 +39,7 @@ public class UserRequest {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    private Long userId;
+    private String clientCode;
     private Long cardId;
 
 }

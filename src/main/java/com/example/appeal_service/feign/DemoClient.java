@@ -11,7 +11,6 @@ import java.util.List;
 @FeignClient(name="demo", url="${demo.service.url}")
 public interface DemoClient {
 
-
     @GetMapping(path = "/api/accounts/get-user-account/{id}")
     List<AccountDTO> getAccountByUserId(@PathVariable("id") Long userId,@RequestHeader("Authorization") String authHeader);
 
