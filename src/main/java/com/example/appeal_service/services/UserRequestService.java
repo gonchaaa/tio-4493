@@ -9,5 +9,5 @@ public interface UserRequestService {
     UserRequestResponseDTO createUserRequest(UserRequestDTO userRequestDTO,String clientCode);
     UserRequestResponseDTO getUserRequestById(Long id);
     List<UserRequestResponseDTO> getAllUserRequests();
-    List<UserRequestResponseDTO> getUserRequestsByUserId(Long userId);
+    List<UserRequestResponseDTO> getUserRequestsByUserId(String clientCode);
 }

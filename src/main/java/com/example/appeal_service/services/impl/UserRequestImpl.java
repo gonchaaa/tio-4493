@@ -7,8 +7,6 @@ import com.example.appeal_service.entities.AppealCategory;
 import com.example.appeal_service.entities.AppealPurpose;
 import com.example.appeal_service.entities.UserRequest;
 import com.example.appeal_service.enums.Status;
-import com.example.appeal_service.feign.DemoClient;
-import com.example.appeal_service.feign.JwtTokenUtil;
 import com.example.appeal_service.repositories.AppealCategoryRepository;
 import com.example.appeal_service.repositories.AppealPurposeRepository;
 import com.example.appeal_service.repositories.UserRequestRepository;
@@ -35,7 +33,7 @@ public class UserRequestImpl implements UserRequestService {
     private final AppealCategoryRepository appealCategoryRepository;
     private final AppealPurposeRepository appealPurposeRepository;
     private final FileStorageService fileStorageService;
-    private final DemoClient demoClient; // feign ucun istifade olunan
+    // private final DemoClient demoClient; feign ucun istifade olunan
     private final CardListForClientCode cardListForClientCode;
     private final ModelMapper modelMapper;
 
@@ -49,6 +47,15 @@ public class UserRequestImpl implements UserRequestService {
             String voicePath = fileStorageService.saveFile(userRequestDTO.getVoiceMessage(),"voices");
             String filePath = fileStorageService.saveFile(userRequestDTO.getFile(),"files");
 
+            if(appealCategory.getId()==3){
+                List<AccountDTO> cards=cardListForClientCode.getCardsByClientCode(clientCode);
+                if (cards.isEmpty()){
+                    throw new RuntimeException("Istifadəçinin kartı yoxdur.");
+                }
+            }
+
+            Long selectedCardId = userRequestDTO.getCardId();
+
             UserRequest userRequest = new UserRequest();
             userRequest.setDescription(userRequestDTO.getDescription());
             userRequest.setCategory(appealCategory);
@@ -58,17 +65,11 @@ public class UserRequestImpl implements UserRequestService {
             userRequest.setStatus(Status.IN_PROGRESS);
             userRequest.setCreatedDate(LocalDateTime.now());
             userRequest.setClientCode(clientCode);
-            userRequest.setCardId(userRequestDTO.getCardId());
+            userRequest.setCardId(selectedCardId);
 
             userRequest= userRequestRepository.save(userRequest);
 
-            if(appealCategory.getId()==3){
-                List<Integer> cards = cardListForClientCode.getMockCardsByClientCode(clientCode);
-                if(cards.isEmpty()) {
-                    throw new RuntimeException("No cards found for user with id: " );
-                }
 
-            }
 
             String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
 
@@ -116,14 +117,14 @@ public class UserRequestImpl implements UserRequestService {
     }
 
     @Override
-    public List<UserRequestResponseDTO> getUserRequestsByUserId(Long userId) {
-    List<UserRequest> userRequests = userRequestRepository.findByUserId(userId);
+    public List<UserRequestResponseDTO> getUserRequestsByUserId(String clientCode) {
+    List<UserRequest> userRequests = userRequestRepository.findByClientCode(clientCode);
     if (userRequests != null && !userRequests.isEmpty()) {
         return userRequests.stream()
                 .sorted(Comparator.comparing(UserRequest::getCreatedDate).reversed())
                 .map(userRequest -> modelMapper.map(userRequest, UserRequestResponseDTO.class))
                 .collect(Collectors.toList());
     }
-    throw new RuntimeException("No user requests found for user with id: " + userId);
+    throw new RuntimeException("No user requests found for user with id: " + clientCode);
     }
 }

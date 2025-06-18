@@ -19,8 +19,8 @@ public class UserRequestController {
 
     @PostMapping
     public ResponseEntity<UserRequestResponseDTO> createUserRequest(@ModelAttribute UserRequestDTO userRequestDTO,
-                                                                    @RequestHeader("Authorization") String authHeader) {
-        UserRequestResponseDTO response = userRequestService.createUserRequest(userRequestDTO,authHeader);
+                                                                    @RequestHeader("clientCode") String clientCode) {
+        UserRequestResponseDTO response = userRequestService.createUserRequest(userRequestDTO,clientCode);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -36,9 +36,9 @@ public class UserRequestController {
         return ResponseEntity.ok(requests);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<UserRequestResponseDTO>> getUserRequestsByUserId(@PathVariable Long userId){
-        List<UserRequestResponseDTO> response = userRequestService.getUserRequestsByUserId(userId);
+    @GetMapping("/user")
+    public ResponseEntity<List<UserRequestResponseDTO>> getUserRequestsByUserId( @RequestHeader("clientCode") String clientCode){
+        List<UserRequestResponseDTO> response = userRequestService.getUserRequestsByUserId(clientCode);
         return ResponseEntity.ok(response);
     }
 }
