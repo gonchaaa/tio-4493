@@ -1,7 +1,7 @@
 package com.example.appeal_service.services.impl;
 
-import com.example.appeal_service.DTOs.UserRequestDTO;
-import com.example.appeal_service.DTOs.feign.AccountDTO;
+import com.example.appeal_service.DTOs.request.UserRequestDTO;
+import com.example.appeal_service.DTOs.response.AccountDTO;
 import com.example.appeal_service.DTOs.response.UserRequestResponseDTO;
 import com.example.appeal_service.entities.AppealCategory;
 import com.example.appeal_service.entities.AppealPurpose;
@@ -14,12 +14,9 @@ import com.example.appeal_service.services.FileStorageService;
 import com.example.appeal_service.services.UserRequestService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -33,7 +30,6 @@ public class UserRequestImpl implements UserRequestService {
     private final AppealCategoryRepository appealCategoryRepository;
     private final AppealPurposeRepository appealPurposeRepository;
     private final FileStorageService fileStorageService;
-    // private final DemoClient demoClient; feign ucun istifade olunan
     private final CardListForClientCode cardListForClientCode;
     private final ModelMapper modelMapper;
 
@@ -55,7 +51,7 @@ public class UserRequestImpl implements UserRequestService {
             }
 
             Long selectedCardId = userRequestDTO.getCardId();
-
+//Burada json-dan description ve carid geldiyi ucun mapper istifade etmedim,cunki id-ler, ses,fayl yukleme sistemi ucun bu formada etmeli idim
             UserRequest userRequest = new UserRequest();
             userRequest.setDescription(userRequestDTO.getDescription());
             userRequest.setCategory(appealCategory);
@@ -104,7 +100,7 @@ public class UserRequestImpl implements UserRequestService {
             userRequestResponseDTO.setFile(baseUrl + "/api/files/download?path=" + userRequest.getAttachmentPath());
             return userRequestResponseDTO;
         }
-
+// null qaytarmağımın səbəbi exception yazmadığım üçündür, çünki real layihede olduğunu bildirdiler
         return null;
     }
 

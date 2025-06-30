@@ -1,6 +1,6 @@
 package com.example.appeal_service.services.impl;
 
-import com.example.appeal_service.DTOs.AppealPurposeDTO;
+import com.example.appeal_service.DTOs.request.AppealPurposeDTO;
 import com.example.appeal_service.entities.AppealCategory;
 import com.example.appeal_service.entities.AppealPurpose;
 import com.example.appeal_service.repositories.AppealCategoryRepository;

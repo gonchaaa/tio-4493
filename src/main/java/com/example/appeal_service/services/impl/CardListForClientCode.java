@@ -1,6 +1,6 @@
 package com.example.appeal_service.services.impl;
 
-import com.example.appeal_service.DTOs.feign.AccountDTO;
+import com.example.appeal_service.DTOs.response.AccountDTO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

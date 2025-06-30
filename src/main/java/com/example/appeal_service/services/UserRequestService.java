@@ -1,6 +1,6 @@
 package com.example.appeal_service.services;
 
-import com.example.appeal_service.DTOs.UserRequestDTO;
+import com.example.appeal_service.DTOs.request.UserRequestDTO;
 import com.example.appeal_service.DTOs.response.UserRequestResponseDTO;
 
 import java.util.List;
